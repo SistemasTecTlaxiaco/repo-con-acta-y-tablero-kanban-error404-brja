@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Passkey Soroban Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at top, #1e1e2f, #0a0a14 70%);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .container {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 45px;
+      width: 380px;
+      border-radius: 20px;
+      box-shadow: 0 0 40px rgba(0,0,0,0.4);
+      animation: fadeIn 0.8s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      background: linear-gradient(to right, #4f9eff, #8ab4ff);
+      -webkit-background-clip: text;
+      color: transparent;
+      font-size: 1.8rem;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      margin-bottom: 15px;
+      font-size: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      background: #3b82f6;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 15px;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #1e60ff;
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Entrar con Passkey</h1>
+
+  <input id="username" placeholder="Nombre de usuario" />
+
+  <button onclick="registerPasskey()">Registrar Passkey</button>
+  <button onclick="loginPasskey()">Entrar con Passkey</button>
+</div>
+
+
+<script>
+function base64urlToBuffer(base64url) {
+  const padding = "=".repeat((4 - base64url.length % 4) % 4);
+  const base64 = (base64url + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(base64);
+  const buffer = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; ++i) buffer[i] = raw.charCodeAt(i);
+  return buffer;
+}
+
+function bufferToBase64url(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  bytes.forEach(b => binary += String.fromCharCode(b));
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+}
+
+// REGISTRO
+async function registerPasskey() {
+  const user = document.getElementById("username").value;
+  if (!user) return alert("Escribe un usuario");
+
+  const publicKey = {
+    challenge: crypto.getRandomValues(new Uint8Array(32)),
+    rp: { name: "Soroban DApp" },
+    user: {
+      id: Uint8Array.from(user, c => c.charCodeAt(0)),
+      name: user,
+      displayName: user
+    },
+    pubKeyCredParams: [{ type: "public-key", alg: -7 }],
+    authenticatorSelection: { authenticatorAttachment: "platform" },
+    timeout: 60000,
+    attestation: "none"
+  };
+
+  try {
+    const credential = await navigator.credentials.create({ publicKey });
+
+    localStorage.setItem("passkey", bufferToBase64url(credential.rawId));
+    localStorage.setItem("username", user);
+
+    alert("Passkey creada correctamente 🎉");
+  } catch (e) {
+    alert("Error creando passkey:\n" + e);
+  }
+}
+
+// LOGIN
+async function loginPasskey() {
+  const saved = localStorage.getItem("passkey");
+  if (!saved) return alert("Primero registra una passkey.");
+
+  const publicKey = {
+    challenge: crypto.getRandomValues(new Uint8Array(32)),
+    allowCredentials: [{
+      id: base64urlToBuffer(saved),
+      type: "public-key",
+      transports: ["internal"]
+    }]
+  };
+
+  try {
+    await navigator.credentials.get({ publicKey });
+
+    window.location.href = "dashboard.html";
+  } catch (e) {
+    alert("Error al iniciar sesión:\n" + e);
+  }
+}
+</script>
+
+</body>
+</html>
