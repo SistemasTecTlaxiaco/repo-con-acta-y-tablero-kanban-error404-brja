@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Passkey </title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f1f5f9;
+    display: flex;
+  }
+  .sidebar {
+    width: 230px;
+    background: #0f172a;
+    color: white;
+    height: 100vh;
+    padding: 20px;
+  }
+  .sidebar h2 {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  .sidebar a {
+    display: block;
+    padding: 12px;
+    margin: 8px 0;
+    background: #1e293b;
+    border-radius: 6px;
+    text-decoration: none;
+    color: white;
+  }
+  .sidebar a:hover {
+    background: #334155;
+  }
+  .content {
+    flex: 1;
+    padding: 30px;
+  }
+  .card {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+  }
+  button {
+    padding: 12px;
+    background: #3b82f6;
+    border: none;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <h2>Soroban App</h2>
+  <a href="#" onclick="show('perfil')">Perfil</a>
+  <a href="#" onclick="show('prestamo')">Solicitar Préstamo</a>
+  <a href="#" onclick="show('activos')">Préstamos Activos</a>
+  <a href="#" onclick="show('passkeys')">Passkeys</a>
+  <a href="index.html">Cerrar Sesión</a>
+</div>
+
+<div class="content">
+
+  <!-- PERFIL -->
+  <div id="perfil" class="card">
+    <h2>Información del Usuario</h2>
+    <p><strong>Nombre:</strong> Rodolfo</p>
+    <p><strong>Correo:</strong> ejemplo@mail.com</p>
+  </div>
+
+  <!-- SOLICITUD DE PRÉSTAMO -->
+  <div id="prestamo" class="card" style="display:none;">
+    <h2>Solicitar Préstamo</h2>
+    <input id="monto" type="number" placeholder="Monto en créditos" style="padding:10px;width:100%;">
+    <button onclick="createLoan()">Crear Préstamo</button>
+  </div>
+
+  <!-- PRÉSTAMOS ACTIVOS -->
+  <div id="activos" class="card" style="display:none;">
+    <h2>Préstamos Activos</h2>
+    <ul id="loanList"></ul>
+  </div>
+
+  <!-- PASSKEYS -->
+  <div id="passkeys" class="card" style="display:none;">
+    <h2>Gestión de Passkeys</h2>
+    <button onclick="alert('Passkey creada (demo)')">Crear Passkey</button>
+  </div>
+
+</div>
+
+<script>
+function show(section){
+  document.getElementById("perfil").style.display = "none";
+  document.getElementById("prestamo").style.display = "none";
+  document.getElementById("activos").style.display = "none";
+  document.getElementById("passkeys").style.display = "none";
+
+  document.getElementById(section).style.display = "block";
+}
+
+function createLoan(){
+  const monto = document.getElementById("monto").value;
+  if (monto == "") return alert("Ingresa un monto.");
+
+  const li = document.createElement("li");
+  li.innerText = "Préstamo de " + monto + " créditos — ESTATUS: PENDIENTE";
+
+  document.getElementById("loanList").appendChild(li);
+  alert("Préstamo creado!");
+  show("activos");
+}
+</script>
+
+</body>
+</html>
